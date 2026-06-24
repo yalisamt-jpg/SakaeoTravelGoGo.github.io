@@ -859,7 +859,7 @@ function doLogin(){
   var u=document.getElementById('loginUser').value.trim();
   var p=document.getElementById('loginPass').value.trim();
   if(!u||!p){showMsg('loginMsg','กรุณากรอกข้อมูลให้ครบ','error');return}
-  var found=getUsers().find(function(x){return x.username===u&&x.password===p});
+  var found=getUsers().find(function(x){return x.username.toLowerCase()===u.toLowerCase()&&x.password===p});
   if(found){
     user={username:found.username,coins:found.coins||0,equippedItems:found.equippedItems||'none,none,none',ownedItems:found.ownedItems||''};
     saveSession(user);toast('ยินดีต้อนรับ '+user.username+' 👋');enterApp();
