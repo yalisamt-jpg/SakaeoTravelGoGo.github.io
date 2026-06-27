@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Moshi Go! 🌟 สระแก้ว</title>
+<title>Sakaeo travel trip 🌟 สระแก้ว</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -368,7 +368,7 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     <circle cx="64" cy="13" r="2.8" fill="#E8702A"/>
     <circle cx="64" cy="13" r="1.2" fill="#FFB347"/>
   </g>
-</svg></span><div class="logo-title">Moshi Go!</div><div class="logo-sub">สำรวจสระแก้ว · สะสมเหรียญ · แต่งมาสคอต</div></div>
+</svg></span><div class="logo-title">Sakaeo travel trip</div><div class="logo-sub">สำรวจสระแก้ว · สะสมเหรียญ · แต่งมาสคอต</div></div>
   <div class="auth-card">
     <div class="auth-tabs"><button class="auth-tab active" onclick="switchAuthTab('login')">เข้าสู่ระบบ</button><button class="auth-tab" onclick="switchAuthTab('register')">สมัครสมาชิก</button></div>
     <div id="loginForm">
@@ -457,7 +457,7 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     <circle cx="64" cy="13" r="2.8" fill="#E8702A"/>
     <circle cx="64" cy="13" r="1.2" fill="#FFB347"/>
   </g>
-</svg>Moshi Go!</span><div class="coins-chip">🪙 <span id="coinsNum">0</span></div></div>
+</svg>Sakaeo travel trip</span><div class="coins-chip">🪙 <span id="coinsNum">0</span></div></div>
   <div class="content">
     <div class="tab-panel active" id="tab-places">
       <div id="heroBox" class="hero-box"></div>
@@ -505,11 +505,25 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     </div>
     <div class="tab-panel" id="tab-wardrobe">
       <div class="wardrobe-top">
-        <div class="mascot-wrap" id="mascotMain">
-          <img id="bearImgMain" src="Bear.png" alt="มาสคอตหมี" style="position:absolute;top:0;left:0;width:120px;height:148px;object-fit:contain;mix-blend-mode:multiply">
-          <div class="slot-hat" id="slotHat" style="pointer-events:none"></div>
-          <div class="slot-glasses" id="slotGlasses" style="pointer-events:none"></div>
-          <div class="slot-bag" id="slotBag" style="pointer-events:none"></div>
+        <div class="bear-stage">
+          <div class="bear-finial"><svg viewBox="0 0 100 100" width="34" height="34" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,2.5)"><path d="M 47,44 C 38,27 8,17 7,36 C 6,53 29,57 47,50 Z" fill="#E8702A"/><path d="M 53,44 C 62,27 92,17 93,36 C 94,53 71,57 53,50 Z" fill="#E8702A"/><path d="M 46,53 C 35,53 12,62 14,75 C 16,85 40,81 48,66 Z" fill="#7C3AED"/><path d="M 54,53 C 65,53 88,62 86,75 C 84,85 60,81 52,66 Z" fill="#7C3AED"/><ellipse cx="50" cy="53" rx="3.5" ry="16" fill="#2C1A08"/><circle cx="50" cy="31" r="6.5" fill="#2C1A08"/><path d="M 47,25 Q 42,18 36,13" stroke="#2C1A08" stroke-width="1.4" fill="none"/><circle cx="36" cy="13" r="2.8" fill="#E8702A"/><path d="M 53,25 Q 58,18 64,13" stroke="#2C1A08" stroke-width="1.4" fill="none"/><circle cx="64" cy="13" r="2.8" fill="#E8702A"/></g></svg></div>
+          <div class="mascot-wrap" id="mascotMain">
+            <div class="bear-body"></div>
+            <div class="bear-paw l"></div>
+            <div class="bear-paw r"></div>
+            <div class="bear-head">
+              <div class="bear-ear l"></div>
+              <div class="bear-ear r"></div>
+              <div class="bear-eye l"></div>
+              <div class="bear-eye r"></div>
+              <div class="bear-cheek l"></div>
+              <div class="bear-cheek r"></div>
+              <div class="bear-snout"><div class="bear-nose"></div></div>
+            </div>
+            <div class="slot-hat" id="slotHat" style="pointer-events:none"></div>
+            <div class="slot-glasses" id="slotGlasses" style="pointer-events:none"></div>
+            <div class="slot-bag" id="slotBag" style="pointer-events:none"></div>
+          </div>
         </div>
         <div class="wardrobe-label">มาสคอตของฉัน ✨</div>
         <div class="slot-tabs"><button class="slot-tab active" onclick="setShopSlot('hat',this)">🎩 หมวก</button><button class="slot-tab" onclick="setShopSlot('glasses',this)">👓 แว่น</button><button class="slot-tab" onclick="setShopSlot('bag',this)">🎒 ของ</button></div>
@@ -1172,9 +1186,9 @@ function buildRouteTimeline(){
   document.getElementById('planRoute').innerHTML=h;
 }
 function copyPlan(){
-  var t='🌟 แผนทริป Moshi Go!\n══════════\n📍 เริ่ม: ตำแหน่งของฉัน\n\n';
+  var t='🌟 แผนทริป Sakaeo travel trip\n══════════\n📍 เริ่ม: ตำแหน่งของฉัน\n\n';
   planPlaces.forEach(function(p,i){t+=(i+1)+'. '+p.name+'\n   📍 '+p.district+'\n   ✨ '+(p.highlights||'').substring(0,60)+'\n\n'});
-  copyText(t+'── Moshi Go! 🌟 ──');
+  copyText(t+'── Sakaeo travel trip 🌟 ──');
 }
 
 // ── HAVERSINE ──
@@ -1232,9 +1246,9 @@ function addFromTimeline(placeId){
   buildTripTimeline(curNearby);renderPlaces(filteredPlaces);renderPlan();renderMissions();renderPackages();
 }
 function copyTrip(){
-  var t='🌟 Moshi Go!\n📍 เริ่ม: ตำแหน่งของฉัน\n';
+  var t='🌟 Sakaeo travel trip\n📍 เริ่ม: ตำแหน่งของฉัน\n';
   if(curNearby.length){t+='\n⚡ แวะระหว่างทาง:\n';curNearby.forEach(function(p,i){var dt=p.distance<1?Math.round(p.distance*1000)+' ม.':p.distance.toFixed(1)+' กม.';t+='  '+(i+1)+'. '+p.name+' ('+dt+')\n'})}
-  t+='\n🏁 จุดหมาย: '+curPlace.name+'\n── Moshi Go! ──';
+  t+='\n🏁 จุดหมาย: '+curPlace.name+'\n── Sakaeo travel trip ──';
   copyText(t);
 }
 
@@ -1888,6 +1902,14 @@ window.addEventListener('load',function(){
 .shop-card .art-box{height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .shop-card .art-box>span{transform:scale(1.4)}
 .shop-name{font-size:13px}
+/* ===== niche arch stage (Sakaeo redesign) ===== */
+.bear-stage{position:relative;width:214px;height:206px;margin:6px auto 6px}
+.bear-stage::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#FCF7ED 0%,#F1E4CD 100%);border-radius:107px 107px 30px 30px;border:1px solid #E4D6BD;box-shadow:inset 0 2px 12px rgba(255,255,255,.75),inset 0 -16px 30px rgba(74,64,54,.05),0 12px 28px rgba(74,64,54,.09)}
+.bear-stage::after{content:"";position:absolute;left:9px;right:9px;top:9px;bottom:9px;border:1.5px solid rgba(201,123,91,.26);border-radius:100px 100px 24px 24px;pointer-events:none}
+.bear-finial{position:absolute;top:-26px;left:50%;transform:translateX(-50%);width:34px;height:34px;z-index:5;filter:drop-shadow(0 3px 5px rgba(120,90,20,.28))}
+.bear-stage .stud{position:absolute;top:80px;width:8px;height:8px;background:#C97B5B;transform:rotate(45deg);border-radius:2px;opacity:.6;z-index:2}
+#tab-wardrobe .mascot-wrap{position:absolute!important;bottom:20px;left:50%;transform:translateX(-50%) scale(1.08)!important;transform-origin:bottom center!important;margin:0!important;z-index:3}
+#tab-wardrobe.tab-panel.active .wardrobe-top{padding-top:42px!important}
 </style>
 <script>
 (function(){
