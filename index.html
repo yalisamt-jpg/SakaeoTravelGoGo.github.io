@@ -336,7 +336,7 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  const firebaseConfig = {
+  firebase.initializeApp({
     apiKey: "AIzaSyDsVMF0Rn_1nw9Qj6KdwQZ7Fb7N1uCxXt8",
     authDomain: "sakaeo-trip-travel.firebaseapp.com",
     databaseURL: "https://sakaeo-trip-travel-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -344,8 +344,7 @@ button{font-family:'Prompt',sans-serif;cursor:pointer}
     storageBucket: "sakaeo-trip-travel.firebasestorage.app",
     messagingSenderId: "246185306555",
     appId: "1:246185306555:web:a760c3e707db1c73553c9e"
-  };
-  firebase.initializeApp(firebaseConfig);
+  });
   var db = firebase.database();
 </script>
 </head>
@@ -1072,6 +1071,27 @@ function switchAuthTab(t){
   document.getElementById('registerForm').style.display=iL?'none':'block';
   document.querySelectorAll('.auth-tab').forEach(function(b,i){b.classList.toggle('active',iL?i===0:i===1)});
 }
+
+// ── Analytics helpers ──
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'))+'-'+(String(d.getDate()).padStart(2,'0'));}
+function trackLogin(username){
+  var now=Date.now();
+  var safeUser=username.replace(/[.#$\[\]]/g,'_');
+  // อัปเดต user record
+  db.ref('analytics/users/'+safeUser).update({lastLogin:now,username:username});
+  db.ref('analytics/users/'+safeUser+'/loginCount').transaction(function(v){return (v||0)+1;});
+  // บันทึก login event รายวัน
+  db.ref('analytics/logins/'+todayKey()).transaction(function(v){return (v||0)+1;});
+  // online presence
+  db.ref('analytics/online/'+safeUser).set({username:username,ts:now});
+  db.ref('analytics/online/'+safeUser).onDisconnect().remove();
+}
+function trackRegister(username){
+  var safeUser=username.replace(/[.#$\[\]]/g,'_');
+  db.ref('analytics/users/'+safeUser).set({username:username,registeredAt:Date.now(),loginCount:0,lastLogin:Date.now()});
+  db.ref('analytics/totalUsers').transaction(function(v){return (v||0)+1;});
+}
+
 function doLogin(){
   var u=document.getElementById('loginUser').value.trim();
   var p=document.getElementById('loginPass').value.trim();
@@ -1079,7 +1099,7 @@ function doLogin(){
   var found=getUsers().find(function(x){return x.username.toLowerCase()===u.toLowerCase()&&x.password===p});
   if(found){
     user={username:found.username,coins:found.coins||0,equippedItems:found.equippedItems||'none,none,none',ownedItems:found.ownedItems||''};
-    saveSession(user);toast('ยินดีต้อนรับ '+user.username+' 👋');enterApp();
+    saveSession(user);trackLogin(user.username);toast('ยินดีต้อนรับ '+user.username+' 👋');enterApp();
   }else showMsg('loginMsg','ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง','error');
 }
 function doRegister(){
@@ -1093,8 +1113,8 @@ function doRegister(){
   var users=getUsers();
   if(users.find(function(x){return x.username.toLowerCase()===u.toLowerCase()})){showMsg('regMsg','ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว','error');return}
   var nu={username:u,password:p,coins:100,equippedItems:'none,none,none',ownedItems:''};
-  users.push(nu);saveUsers(users);
-  user={username:u,coins:100,equippedItems:'none,none,none',ownedItems:''};saveSession(user);
+  users.push(nu);saveUsers(users);trackRegister(u);
+  user={username:u,coins:100,equippedItems:'none,none,none',ownedItems:''};saveSession(user);trackLogin(u);
   showMsg('regMsg','🎉 สมัครสำเร็จ! ได้รับ 100 เหรียญ','success');
   setTimeout(enterApp,1200);
 }
@@ -1570,7 +1590,10 @@ function cancelEditShop(){
 }
 
 function loadCustomData(){
-  // ── Firebase real-time sync ──
+  try{customPlaces=JSON.parse(localStorage.getItem('moshi_cplaces')||'[]')}catch(e){customPlaces=[]}
+  try{customShops=JSON.parse(localStorage.getItem('moshi_cshops')||'[]')}catch(e){customShops=[]}
+  customPlaces.forEach(function(p){if(!PLACES.find(function(x){return x.id===p.id}))PLACES.push(p)});
+  customShops.forEach(function(s){if(!SHOPS_LOCAL.find(function(x){return x.id===s.id}))SHOPS_LOCAL.push(s)});
   db.ref('customPlaces').on('value',function(snap){
     var fbPlaces=snap.val()||[];
     customPlaces=fbPlaces.filter(Boolean);
@@ -1579,8 +1602,7 @@ function loadCustomData(){
       if(idx!==-1)PLACES[idx]=p; else PLACES.push(p);
     });
     localStorage.setItem('moshi_cplaces',JSON.stringify(customPlaces));db.ref('customPlaces').set(customPlaces);
-    renderPlaces(PLACES);
-    renderAdminLists();
+    renderPlaces(PLACES); renderAdminLists();
   });
   db.ref('customShops').on('value',function(snap){
     var fbShops=snap.val()||[];
