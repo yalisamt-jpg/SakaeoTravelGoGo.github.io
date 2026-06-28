@@ -1074,8 +1074,7 @@ function switchAuthTab(t){
 
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'))+'-'+(String(d.getDate()).padStart(2,'0'));}
 function trackLogin(username){
-  var now=Date.now();
-  var safeUser=username.replace(/[.#$\[\]]/g,'_');
+  var now=Date.now();var safeUser=username.replace(/[.#$\[\]]/g,'_');
   db.ref('analytics/users/'+safeUser).update({lastLogin:now,username:username});
   db.ref('analytics/users/'+safeUser+'/loginCount').transaction(function(v){return (v||0)+1;});
   db.ref('analytics/logins/'+todayKey()).transaction(function(v){return (v||0)+1;});
@@ -1589,6 +1588,9 @@ function loadCustomData(){
   try{customShops=JSON.parse(localStorage.getItem('moshi_cshops')||'[]')}catch(e){customShops=[]}
   customPlaces.forEach(function(p){if(!PLACES.find(function(x){return x.id===p.id}))PLACES.push(p)});
   customShops.forEach(function(s){if(!SHOPS_LOCAL.find(function(x){return x.id===s.id}))SHOPS_LOCAL.push(s)});
+  var edits={};try{edits=JSON.parse(localStorage.getItem('moshi_sedit')||'{}')}catch(e){}
+  var hidden=[];try{hidden=JSON.parse(localStorage.getItem('moshi_shide')||'[]')}catch(e){}
+
   db.ref('customPlaces').on('value',function(snap){
     var fbPlaces=snap.val()||[];
     customPlaces=fbPlaces.filter(Boolean);
@@ -1599,6 +1601,7 @@ function loadCustomData(){
     localStorage.setItem('moshi_cplaces',JSON.stringify(customPlaces));db.ref('customPlaces').set(customPlaces);
     renderPlaces(PLACES);
   });
+
   db.ref('customShops').on('value',function(snap){
     var fbShops=snap.val()||[];
     customShops=fbShops.filter(Boolean);
@@ -1607,9 +1610,27 @@ function loadCustomData(){
       if(idx!==-1)SHOPS_LOCAL[idx]=s; else SHOPS_LOCAL.push(s);
     });
     localStorage.setItem('moshi_cshops',JSON.stringify(customShops));db.ref('customShops').set(customShops);
+    renderShopsLocal();
   });
-  var edits={};try{edits=JSON.parse(localStorage.getItem('moshi_sedit')||'{}')}catch(e){}
-  var hidden=[];try{hidden=JSON.parse(localStorage.getItem('moshi_shide')||'[]')}catch(e){}
+
+  db.ref('shopEdits').on('value',function(snap){
+    var fbEdits=snap.val()||{};
+    localStorage.setItem('moshi_sedit',JSON.stringify(fbEdits));
+    Object.keys(fbEdits).forEach(function(id){
+      var idx=SHOPS_LOCAL.findIndex(function(x){return x.id===id});
+      if(idx!==-1)Object.assign(SHOPS_LOCAL[idx],fbEdits[id]);
+    });
+    renderShopsLocal();
+  });
+
+  db.ref('shopHidden').on('value',function(snap){
+    var fbHidden=snap.val()||[];
+    localStorage.setItem('moshi_shide',JSON.stringify(fbHidden));
+    for(var i=SHOPS_LOCAL.length-1;i>=0;i--){
+      if(fbHidden.indexOf(SHOPS_LOCAL[i].id)!==-1)SHOPS_LOCAL.splice(i,1);
+    }
+    renderShopsLocal();
+  });
   for(var i=SHOPS_LOCAL.length-1;i>=0;i--){
     if(hidden.indexOf(SHOPS_LOCAL[i].id)!==-1){SHOPS_LOCAL.splice(i,1)}
     else if(edits[SHOPS_LOCAL[i].id]){Object.assign(SHOPS_LOCAL[i],edits[SHOPS_LOCAL[i].id])}
@@ -1722,7 +1743,7 @@ function submitAddShop(){
     s.discount=disc;s.coins=coins;s.lat=lat;s.lon=lon;s.e=e;
     var csIdx=customShops.findIndex(function(x){return x.id===s.id});
     if(csIdx!==-1){customShops[csIdx]=Object.assign({},s);localStorage.setItem('moshi_cshops',JSON.stringify(customShops))}
-    else{var edits={};try{edits=JSON.parse(localStorage.getItem('moshi_sedit')||'{}')}catch(e){}edits[s.id]=Object.assign({},s);localStorage.setItem('moshi_sedit',JSON.stringify(edits))}
+    else{var edits={};try{edits=JSON.parse(localStorage.getItem('moshi_sedit')||'{}')}catch(e){}edits[s.id]=Object.assign({},s);localStorage.setItem('moshi_sedit',JSON.stringify(edits));db.ref('shopEdits').set(edits);}
     var m=document.getElementById('sf-msg');m.className='msg-box success';m.textContent='✅ แก้ไข "'+name+'" แล้ว';
     setTimeout(function(){m.className='';m.textContent=''},3000);
     cancelEditShop();renderAdminShops();renderShopsLocal();toast('✅ บันทึกการแก้ไขแล้ว!');
@@ -1760,7 +1781,7 @@ function delCS(i){
     customShops.splice(csIdx,1);localStorage.setItem('moshi_cshops',JSON.stringify(customShops));db.ref('customShops').set(customShops);
   }else{
     var hidden=[];try{hidden=JSON.parse(localStorage.getItem('moshi_shide')||'[]')}catch(e){}
-    hidden.push(s.id);localStorage.setItem('moshi_shide',JSON.stringify(hidden));
+    hidden.push(s.id);localStorage.setItem('moshi_shide',JSON.stringify(hidden));db.ref('shopHidden').set(hidden);
   }
   SHOPS_LOCAL.splice(i,1);
   renderAdminShops();renderShopsLocal();toast('ลบ "'+s.name+'" แล้ว');
