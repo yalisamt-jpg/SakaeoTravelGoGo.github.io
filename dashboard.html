@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — Sakaeo Trip Travel</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyDsVMF0Rn_1nw9Qj6KdwQZ7Fb7N1uCxXt8",
+    authDomain: "sakaeo-trip-travel.firebaseapp.com",
+    databaseURL: "https://sakaeo-trip-travel-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "sakaeo-trip-travel",
+    storageBucket: "sakaeo-trip-travel.firebasestorage.app",
+    messagingSenderId: "246185306555",
+    appId: "1:246185306555:web:a760c3e707db1c73553c9e"
+  });
+  var db = firebase.database();
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#4A4036;--pd:#352E26;--pl:#F0E7D6;--bg:#F3ECE0;
+  --tx:#4A4036;--txl:#8C8275;--gold:#C99A2E;
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+  --line:#E6DAC6;--r:16px;
+  --sh:0 4px 16px rgba(74,64,54,.08);
+}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+
+/* HEADER */
+.header{background:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100}
+.header-logo{font-size:18px;font-weight:700;color:var(--pd)}
+.header-sub{font-size:11px;color:var(--txl);margin-top:1px}
+.live-dot{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:600}
+.live-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.content{max-width:1100px;margin:0 auto;padding:24px 16px}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+@media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:#fff;border-radius:var(--r);padding:18px 16px;box-shadow:var(--sh);border-top:3px solid var(--p)}
+.stat-card.green{border-top-color:var(--green)}
+.stat-card.gold{border-top-color:var(--gold)}
+.stat-card.blue{border-top-color:var(--blue)}
+.stat-icon{font-size:26px;margin-bottom:8px}
+.stat-num{font-size:28px;font-weight:700;color:var(--pd);line-height:1}
+.stat-label{font-size:11px;color:var(--txl);margin-top:4px;font-weight:500}
+
+/* SECTION */
+.section{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sh);margin-bottom:16px}
+.section-title{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--pl);color:var(--pd)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:480px}
+th{background:var(--pl);color:var(--pd);padding:9px 12px;text-align:left;font-weight:600;white-space:nowrap;border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid #f1f0ed;color:var(--tx);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#faf8f4}
+.cat-chip{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;background:var(--pl);color:var(--pd);white-space:nowrap}
+
+/* CATEGORY CHART */
+.cat-bars{display:flex;flex-direction:column;gap:10px}
+.cat-row{display:flex;align-items:center;gap:10px}
+.cat-name{font-size:12px;color:var(--tx);width:160px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-bar-wrap{flex:1;background:var(--pl);border-radius:20px;height:12px;overflow:hidden}
+.cat-bar{height:100%;background:var(--p);border-radius:20px;transition:width .6s ease}
+.cat-count{font-size:11px;font-weight:700;color:var(--pd);width:24px;text-align:right;flex-shrink:0}
+
+/* DISTRICT GRID */
+.dist-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:600px){.dist-grid{grid-template-columns:repeat(3,1fr)}}
+.dist-card{background:var(--bg);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:space-between}
+.dist-name{font-size:12px;font-weight:600;color:var(--tx)}
+.dist-num{font-size:18px;font-weight:700;color:var(--pd)}
+
+/* EMPTY / LOADING */
+.loading{text-align:center;padding:40px;color:var(--txl);font-size:13px}
+.empty{text-align:center;padding:32px;color:var(--txl);font-size:13px}
+.empty-icon{font-size:36px;margin-bottom:8px}
+
+/* LAST UPDATE */
+.updated{font-size:11px;color:var(--txl);text-align:right;margin-top:6px}
+
+/* TABS */
+.dash-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.dash-tab{padding:8px 16px;border:1.5px solid var(--line);border-radius:100px;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;background:#fff;color:var(--txl);cursor:pointer;transition:all .2s}
+.dash-tab.active{background:var(--p);border-color:var(--p);color:#fff}
+
+.tab-panel{display:none}.tab-panel.active{display:block}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">📊 Dashboard — Sakaeo Trip Travel</div>
+    <div class="header-sub">ข้อมูล real-time จาก Firebase</div>
+  </div>
+  <span class="live-dot" id="liveStatus">กำลังโหลด...</span>
+</div>
+
+<div class="content">
+
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📍</div>
+      <div class="stat-num" id="s-places">—</div>
+      <div class="stat-label">สถานที่ (Admin เพิ่ม)</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon">🏪</div>
+      <div class="stat-num" id="s-shops">—</div>
+      <div class="stat-label">ร้านค้า (Admin เพิ่ม)</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon">🏘️</div>
+      <div class="stat-num" id="s-districts">—</div>
+      <div class="stat-label">อำเภอที่มีข้อมูล</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">🗂️</div>
+      <div class="stat-num" id="s-cats">—</div>
+      <div class="stat-label">หมวดหมู่</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="dash-tabs">
+    <button class="dash-tab active" onclick="switchTab('places',this)">📍 สถานที่</button>
+    <button class="dash-tab" onclick="switchTab('shops',this)">🏪 ร้านค้า</button>
+    <button class="dash-tab" onclick="switchTab('analysis',this)">📈 วิเคราะห์</button>
+  </div>
+
+  <!-- TAB: PLACES -->
+  <div id="tab-places" class="tab-panel active">
+    <div class="section">
+      <div class="section-title">📍 รายการสถานที่ <span class="badge" id="badge-places">0</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>ชื่อสถานที่</th><th>อำเภอ</th><th>หมวดหมู่</th><th>ประเภท</th><th>พิกัด</th>
+          </tr></thead>
+          <tbody id="tbl-places"><tr><td colspan="6" class="loading">⏳ กำลังโหลด...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="updated" id="upd-places"></div>
+    </div>
+  </div>
+
+  <!-- TAB: SHOPS -->
+  <div id="tab-shops" class="tab-panel">
+    <div class="section">
+      <div class="section-title">🏪 รายการร้านค้า <span class="badge" id="badge-shops">0</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>ชื่อร้าน</th><th>หมวดหมู่</th><th>รายละเอียด</th><th>ส่วนลด</th><th>เหรียญ</th>
+          </tr></thead>
+          <tbody id="tbl-shops"><tr><td colspan="6" class="loading">⏳ กำลังโหลด...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="updated" id="upd-shops"></div>
+    </div>
+  </div>
+
+  <!-- TAB: ANALYSIS -->
+  <div id="tab-analysis" class="tab-panel">
+    <div style="display:grid;grid-template-columns:1fr;gap:16px">
+      <div class="section">
+        <div class="section-title">🗂️ สถานที่แยกตามหมวดหมู่</div>
+        <div class="cat-bars" id="cat-bars"><div class="loading">⏳ กำลังโหลด...</div></div>
+      </div>
+      <div class="section">
+        <div class="section-title">🏘️ จำนวนสถานที่แยกตามอำเภอ</div>
+        <div class="dist-grid" id="dist-grid"><div class="loading">⏳ กำลังโหลด...</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.dash-tab').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function now(){
+  return new Date().toLocaleTimeString('th-TH');
+}
+
+function renderPlaces(places){
+  var tbody = document.getElementById('tbl-places');
+  document.getElementById('badge-places').textContent = places.length;
+  document.getElementById('s-places').textContent = places.length;
+  document.getElementById('upd-places').textContent = 'อัปเดตล่าสุด: '+now();
+  if(!places.length){
+    tbody.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">📭</div>ยังไม่มีสถานที่ที่ Admin เพิ่ม</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = places.map(function(p,i){
+    var lat = p.lat ? p.lat.toFixed(4) : '—';
+    var lon = p.lon ? p.lon.toFixed(4) : '—';
+    return '<tr>'+
+      '<td>'+(i+1)+'</td>'+
+      '<td><b>'+esc(p.name||'—')+'</b>'+(p.highlights?'<br><span style="font-size:10px;color:#8C8275">'+esc(p.highlights.substring(0,50))+(p.highlights.length>50?'…':'')+'</span>':'')+'</td>'+
+      '<td>'+esc(p.district||'—')+'</td>'+
+      '<td><span class="cat-chip">'+esc(p.category||'—')+'</span></td>'+
+      '<td>'+esc(p.type||'—')+'</td>'+
+      '<td style="font-size:10px;color:#8C8275">'+lat+'<br>'+lon+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function renderShops(shops){
+  var tbody = document.getElementById('tbl-shops');
+  document.getElementById('badge-shops').textContent = shops.length;
+  document.getElementById('s-shops').textContent = shops.length;
+  document.getElementById('upd-shops').textContent = 'อัปเดตล่าสุด: '+now();
+  if(!shops.length){
+    tbody.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">📭</div>ยังไม่มีร้านค้าที่ Admin เพิ่ม</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = shops.map(function(s,i){
+    return '<tr>'+
+      '<td>'+(i+1)+'</td>'+
+      '<td><b>'+esc(s.name||'—')+'</b></td>'+
+      '<td><span class="cat-chip">'+esc(s.cat||'—')+'</span></td>'+
+      '<td style="font-size:11px;color:#64748b">'+esc((s.desc||'').substring(0,60))+'</td>'+
+      '<td style="color:#15803d;font-weight:700">'+esc(s.discount||'—')+'</td>'+
+      '<td style="color:#C99A2E;font-weight:700">🪙 '+esc(String(s.coins||'—'))+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function renderAnalysis(places){
+  // หมวดหมู่
+  var catCount = {};
+  places.forEach(function(p){ var c=p.category||'ไม่ระบุ'; catCount[c]=(catCount[c]||0)+1; });
+  var cats = Object.entries(catCount).sort(function(a,b){return b[1]-a[1]});
+  var maxCat = cats.length ? cats[0][1] : 1;
+  document.getElementById('s-cats').textContent = cats.length;
+  document.getElementById('cat-bars').innerHTML = cats.length ?
+    cats.map(function(c){
+      var pct = Math.round(c[1]/maxCat*100);
+      return '<div class="cat-row">'+
+        '<div class="cat-name" title="'+esc(c[0])+'">'+esc(c[0])+'</div>'+
+        '<div class="cat-bar-wrap"><div class="cat-bar" style="width:'+pct+'%"></div></div>'+
+        '<div class="cat-count">'+c[1]+'</div>'+
+      '</div>';
+    }).join('') :
+    '<div class="empty"><div class="empty-icon">📭</div>ยังไม่มีข้อมูล</div>';
+
+  // อำเภอ
+  var distCount = {};
+  places.forEach(function(p){ var d=p.district||'ไม่ระบุ'; distCount[d]=(distCount[d]||0)+1; });
+  var dists = Object.entries(distCount).sort(function(a,b){return b[1]-a[1]});
+  document.getElementById('s-districts').textContent = dists.length;
+  document.getElementById('dist-grid').innerHTML = dists.length ?
+    dists.map(function(d){
+      return '<div class="dist-card">'+
+        '<div class="dist-name">'+esc(d[0])+'</div>'+
+        '<div class="dist-num">'+d[1]+'</div>'+
+      '</div>';
+    }).join('') :
+    '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📭</div>ยังไม่มีข้อมูล</div>';
+}
+
+function esc(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Firebase Listeners ──
+db.ref('customPlaces').on('value', function(snap){
+  var places = (snap.val()||[]).filter(Boolean);
+  renderPlaces(places);
+  renderAnalysis(places);
+  document.getElementById('liveStatus').textContent = 'เชื่อมต่อแล้ว (Real-time)';
+}, function(err){
+  document.getElementById('liveStatus').textContent = 'เชื่อมต่อไม่ได้';
+  console.error(err);
+});
+
+db.ref('customShops').on('value', function(snap){
+  var shops = (snap.val()||[]).filter(Boolean);
+  renderShops(shops);
+});
+</script>
+
+</body>
+</html>
